@@ -1,6 +1,6 @@
 /*
   OLED_SSD1306.cpp - for ESP-WROOM-02 ( esp8266 ) or Arduino
-  Beta version 1.5
+  Beta version 1.6
   
 The MIT License (MIT)
 
@@ -31,44 +31,52 @@ SOFTWARE.
 
 OLED_SSD1306::OLED_SSD1306(){}
 
-//*************************SetUp**************************************
 void OLED_SSD1306::setup_OLED_SSD1306(uint8_t Addres){
   uint8_t i,j,k;
   Wire.beginTransmission(Addres);
-  Wire.write(0xAE); //display off
-  Wire.write(0xA4); //RAM reset
-  Wire.write(0xA5); //Entire display ON
-  Wire.write(0xD3); //Set Display Offset
-  Wire.write(0x00);
-  Wire.write(0x40); //set Display Start Line
-  Wire.write(0xA0); //Segment Re-map A1が左右反転
-  Wire.write(0xC0); //Set COM Output Scan Direction
-  Wire.write(0xDA); //Set COM Pins Hardware Configuration
-  Wire.write(B00010010); //Disable COM Left/Right remap/Alternative COM pin configuration(RESET)
-  Wire.write(0x20); //Set Memory Addressing Mode
-  Wire.write(B00000010); //Page Addressing Mode (RESET)
-  Wire.write(0x22); //Set Page Address
-  Wire.write(0x00); //start page address
-  Wire.write(0x07); //stop page address
-  Wire.write(0x81); // contrast control
-  Wire.write(0x7F); //contrast127
-  Wire.write(0x8d); //set charge pump enable
-  Wire.write(0x14); //charge pump ON
-  Wire.write(0xAF); //display ON
+  Wire.write(B00000000); //control byte, Co bit = 0 (continue), D/C# = 0 (command)
+    Wire.write(0xAE); //display off
+    Wire.write(0xA8); //Set Multiplex Ratio  0xA8, 0x3F
+      Wire.write(B00111111); //64MUX
+    Wire.write(0xD3); //Set Display Offset 0xD3, 0x00
+      Wire.write(0x00);
+    Wire.write(0x40); //Set Display Start Line 0x40
+    Wire.write(0xA0); //Set Segment re-map 0xA0/0xA1
+    Wire.write(0xC0); //Set COM Output Scan Direction 0xC0,/0xC8
+    Wire.write(0xDA); //Set COM Pins hardware configuration 0xDA, 0x02
+      Wire.write(B00010010);
+    Wire.write(0x81); //Set Contrast Control 0x81, 0x7F
+      Wire.write(255); //0-255
+    Wire.write(0xA4); //Disable Entire Display On
+    Wire.write(0xA6); //Set Normal Display 0xA6, Inverse display 0xA7
+    Wire.write(0xD5); //Set Display Clock Divide Ratio/Oscillator Frequency 0xD5, 0x80
+      Wire.write(B10000000);
+    Wire.write(0x2E); //Deactivate scroll
+    Wire.write(0x20); //Set Memory Addressing Mode
+      Wire.write(0x10); //Page addressing mode
+    Wire.write(0x21); //set Column Address
+      Wire.write(0); //Column Start Address(0～127)
+      Wire.write(127); //Column Stop Address
+    Wire.write(0x22); //Set Page Address
+      Wire.write(0); //Start page
+      Wire.write(7); //Stop page
+    Wire.write(0x8D); //Set Enable charge pump regulator 0x8D, 0x14
+      Wire.write(0x14);
+    Wire.write(0xAF); //Display On 0xAF
   Wire.endTransmission();
   //Clear Display
   for(i=0; i<8; i++){
     Wire.beginTransmission(Addres);
-    Wire.write(0x00); //set display start line
-    Wire.write(0xB0 | i); //set page start address
-    Wire.write(0x21);//set column addres
-    Wire.write(0x00 | 0);//start column addres
-    Wire.write(B01111111);//stop column addres
+    Wire.write(B00000000); //control byte, Co bit = 0 (continue), D/C# = 0 (command)
+      Wire.write(0xB0 | i); //set page start address
+      Wire.write(0x21);//set column addres
+        Wire.write(0);//start column addres
+        Wire.write(127);//stop column addres
     Wire.endTransmission();
     //horizontal line
     for(j=0; j<16; j++){//column = 8bit X 16
       Wire.beginTransmission(Addres);
-      Wire.write(0x40); //Set Display Start Line
+      Wire.write(B01000000); //control byte, Co bit = 0 (continue), D/C# = 1 (data)
       for(k=0; k<8; k++){
         Wire.write(0x00);
       }
@@ -76,44 +84,53 @@ void OLED_SSD1306::setup_OLED_SSD1306(uint8_t Addres){
     }
   }
 }
-//*************************SetUp**************************************
+
 void OLED_SSD1306::Ini_OLED_SSD1306(uint8_t Addres, uint8_t Contrast){
   uint8_t i,j,k;
   Wire.beginTransmission(Addres);
-  Wire.write(0xAE); //display off
-  Wire.write(0xA4); //RAM reset
-  Wire.write(0xA5); //Entire display ON
-  Wire.write(0xD3); //Set Display Offset
-  Wire.write(0x00);
-  Wire.write(0x40); //set Display Start Line
-  Wire.write(0xA0); //Segment Re-map A1が左右反転
-  Wire.write(0xC0); //Set COM Output Scan Direction
-  Wire.write(0xDA); //Set COM Pins Hardware Configuration
-  Wire.write(B00010010); //Disable COM Left/Right remap/Alternative COM pin configuration(RESET)
-  Wire.write(0x20); //Set Memory Addressing Mode
-  Wire.write(B00000010); //Page Addressing Mode (RESET)
-  Wire.write(0x22); //Set Page Address
-  Wire.write(0x00); //start page address
-  Wire.write(0x07); //stop page address
-  Wire.write(0x81); // contrast control
-  Wire.write(Contrast); //contrast 0-255
-  Wire.write(0x8d); //set charge pump enable
-  Wire.write(0x14); //charge pump ON
-  Wire.write(0xAF); //display ON
+  Wire.write(B00000000); //control byte, Co bit = 0 (continue), D/C# = 0 (command)
+    Wire.write(0xAE); //display off
+    Wire.write(0xA8); //Set Multiplex Ratio  0xA8, 0x3F
+      Wire.write(B00111111); //64MUX
+    Wire.write(0xD3); //Set Display Offset 0xD3, 0x00
+      Wire.write(0x00);
+    Wire.write(0x40); //Set Display Start Line 0x40
+    Wire.write(0xA0); //Set Segment re-map 0xA0/0xA1
+    Wire.write(0xC0); //Set COM Output Scan Direction 0xC0,/0xC8
+    Wire.write(0xDA); //Set COM Pins hardware configuration 0xDA, 0x02
+      Wire.write(B00010010);
+    Wire.write(0x81); //Set Contrast Control 0x81, 0x7F
+      Wire.write(255); //0-255
+    Wire.write(0xA4); //Disable Entire Display On
+    Wire.write(0xA6); //Set Normal Display 0xA6, Inverse display 0xA7
+    Wire.write(0xD5); //Set Display Clock Divide Ratio/Oscillator Frequency 0xD5, 0x80
+      Wire.write(B10000000);
+    Wire.write(0x2E); //Deactivate scroll
+    Wire.write(0x20); //Set Memory Addressing Mode
+      Wire.write(0x10); //Page addressing mode
+    Wire.write(0x21); //set Column Address
+      Wire.write(0); //Column Start Address(0～127)
+      Wire.write(127); //Column Stop Address
+    Wire.write(0x22); //Set Page Address
+      Wire.write(0); //Start page
+      Wire.write(7); //Stop page
+    Wire.write(0x8D); //Set Enable charge pump regulator 0x8D, 0x14
+      Wire.write(0x14);
+    Wire.write(0xAF); //Display On 0xAF
   Wire.endTransmission();
   //Clear Display
   for(i=0; i<8; i++){
     Wire.beginTransmission(Addres);
-    Wire.write(0x00); //set display start line
-    Wire.write(0xB0 | i); //set page start address
-    Wire.write(0x21);//set column addres
-    Wire.write(0x00 | 0);//start column addres
-    Wire.write(B01111111);//stop column addres
+    Wire.write(B00000000); //control byte, Co bit = 0 (continue), D/C# = 0 (command)
+      Wire.write(0xB0 | i); //set page start address
+      Wire.write(0x21);//set column addres
+        Wire.write(0);//start column addres
+        Wire.write(127);//stop column addres
     Wire.endTransmission();
     //horizontal line
     for(j=0; j<16; j++){//column = 8bit X 16
       Wire.beginTransmission(Addres);
-      Wire.write(0x40); //Set Display Start Line
+      Wire.write(B01000000); //control byte, Co bit = 0 (continue), D/C# = 1 (data)
       for(k=0; k<8; k++){
         Wire.write(0x00);
       }
@@ -121,37 +138,36 @@ void OLED_SSD1306::Ini_OLED_SSD1306(uint8_t Addres, uint8_t Contrast){
     }
   }
 }
-//***************************************************************
+
 void OLED_SSD1306::OLED_1x1_Display_Out_8x16(uint8_t Addres, uint8_t* Dot1, uint8_t* Dot2, uint8_t* Dot3, uint8_t* Dot4)
 {
   uint8_t i;
 
   Wire.beginTransmission(Addres);
-  Wire.write(0x00); //set display start line
-  Wire.write(0xB0 | 7); //set page start address
-  Wire.write(0x21);//set column addres
-  Wire.write(0x00 | 90);//start column addres
-  Wire.write(B01111111);//Column Stop Address
+  Wire.write(B00000000); //control byte, Co bit = 0 (continue), D/C# = 0 (command)
+    Wire.write(0xB0 | 7); //set page start address
+    Wire.write(0x21);//set column addres
+      Wire.write(0x00 | 90);//start column addres
+      Wire.write(B01111111);//Column Stop Address
   Wire.endTransmission();
+  
   Wire.beginTransmission(Addres); // might be different for your display
-  Wire.write(0x40); //Set Display Start Line
-
-  for(i=0; i<8; i++){
-    Wire.write(Dot1[i]);
-  }
-  for(i=0; i<8; i++){
-    Wire.write(Dot2[i]);
-  }
-  for(i=0; i<8; i++){
-    Wire.write(Dot3[i]);
-  }
-  for(i=0; i<8; i++){
-    Wire.write(Dot4[i]);
-  }
+  Wire.write(B01000000); //control byte, Co bit = 0 (continue), D/C# = 1 (data)
+    for(i=0; i<8; i++){
+      Wire.write(Dot1[i]);
+    }
+    for(i=0; i<8; i++){
+      Wire.write(Dot2[i]);
+    }
+    for(i=0; i<8; i++){
+      Wire.write(Dot3[i]);
+    }
+    for(i=0; i<8; i++){
+      Wire.write(Dot4[i]);
+    }
   Wire.endTransmission();
 }
 
-//********************************************
 void OLED_SSD1306::Dot_2X2_convert(uint8_t* DotB1, uint8_t cnv1[16], uint8_t cnv2[16])
 {
   uint8_t i,j;
@@ -171,7 +187,6 @@ void OLED_SSD1306::Dot_2X2_convert(uint8_t* DotB1, uint8_t cnv1[16], uint8_t cnv
   }
 }
 
-//**************************************************
 void OLED_SSD1306::OLED_2X2_Display_Out_16x127(uint8_t Addres, uint8_t x, uint8_t y, uint8_t* DotB1,uint8_t* DotB2, uint8_t* DotB3, uint8_t* DotB4, uint8_t* DotB5,uint8_t* DotB6, uint8_t* DotB7, uint8_t* DotB8)
 {//------------------------x(0-127),y(0-6)
   uint8_t i;
@@ -187,14 +202,14 @@ void OLED_SSD1306::OLED_2X2_Display_Out_16x127(uint8_t Addres, uint8_t x, uint8_
   Dot_2X2_convert(DotB8, cnv8[0], cnv8[1]);
       
   Wire.beginTransmission(Addres); // might be different for your display
-  Wire.write(0x00);
-  Wire.write(0xB0 | y);
-  Wire.write(0x21);//set column addres
-  Wire.write(0x00 | x);//start column addres
-  Wire.write(B01111111);//stop column addres
+  Wire.write(B00000000); //control byte, Co bit = 0 (continue), D/C# = 0 (command)
+    Wire.write(0xB0 | y);
+    Wire.write(0x21);//set column addres
+    Wire.write(0x00 | x);//start column addres
+    Wire.write(127);//stop column addres
   Wire.endTransmission();
     Wire.beginTransmission(Addres); // might be different for your display
-    Wire.write(0x40);
+    Wire.write(B01000000); //control byte, Co bit = 0 (continue), D/C# = 1 (data)
     for(i=0;i<16;i++){
       Wire.write(cnv1[0][i]);
     }
@@ -203,7 +218,7 @@ void OLED_SSD1306::OLED_2X2_Display_Out_16x127(uint8_t Addres, uint8_t x, uint8_
     }
     Wire.endTransmission();
     Wire.beginTransmission(Addres); // might be different for your display
-    Wire.write(0x40);
+    Wire.write(B01000000); //control byte, Co bit = 0 (continue), D/C# = 1 (data)
     for(i=0;i<16;i++){
       Wire.write(cnv3[0][i]);
     }
@@ -212,7 +227,7 @@ void OLED_SSD1306::OLED_2X2_Display_Out_16x127(uint8_t Addres, uint8_t x, uint8_
     }
     Wire.endTransmission();
     Wire.beginTransmission(Addres); // might be different for your display
-    Wire.write(0x40);
+    Wire.write(B01000000); //control byte, Co bit = 0 (continue), D/C# = 1 (data)
     for(i=0;i<16;i++){
       Wire.write(cnv5[0][i]);
     }
@@ -221,7 +236,7 @@ void OLED_SSD1306::OLED_2X2_Display_Out_16x127(uint8_t Addres, uint8_t x, uint8_
     }
     Wire.endTransmission();
     Wire.beginTransmission(Addres); // might be different for your display
-    Wire.write(0x40);
+    Wire.write(B01000000); //control byte, Co bit = 0 (continue), D/C# = 1 (data)
     for(i=0;i<16;i++){
       Wire.write(cnv7[0][i]);
     }
@@ -230,53 +245,57 @@ void OLED_SSD1306::OLED_2X2_Display_Out_16x127(uint8_t Addres, uint8_t x, uint8_
     }
     Wire.endTransmission();
   y++;
+  
   Wire.beginTransmission(Addres); // might be different for your display
-  Wire.write(0x00);
-  Wire.write(0xB0 | y);
-  Wire.write(0x21);//set column addres
-  Wire.write(0x00 | x);//start column addres
-  Wire.write(B01111111);//stop column addres
+  Wire.write(B00000000); //control byte, Co bit = 0 (continue), D/C# = 0 (command)
+    Wire.write(0xB0 | y);
+    Wire.write(0x21);//set column addres
+      Wire.write(0x00 | x);//start column addres
+      Wire.write(127);//stop column addres
   Wire.endTransmission();
+  
     Wire.beginTransmission(Addres); // might be different for your display
-    Wire.write(0x40);
-    for(i=0;i<16;i++){
-      Wire.write(cnv1[1][i]);
-    }
-    for(i=0;i<16;i++){
-      Wire.write(cnv2[1][i]);
-    }
+    Wire.write(B01000000); //control byte, Co bit = 0 (continue), D/C# = 1 (data)
+      for(i=0;i<16;i++){
+        Wire.write(cnv1[1][i]);
+      }
+      for(i=0;i<16;i++){
+        Wire.write(cnv2[1][i]);
+      }
     Wire.endTransmission();
+  
     Wire.beginTransmission(Addres); // might be different for your display
-    Wire.write(0x40);
-    for(i=0;i<16;i++){
-      Wire.write(cnv3[1][i]);
-    }
-    for(i=0;i<16;i++){
-      Wire.write(cnv4[1][i]);
-    }
+    Wire.write(B01000000); //control byte, Co bit = 0 (continue), D/C# = 1 (data)
+      for(i=0;i<16;i++){
+        Wire.write(cnv3[1][i]);
+      }
+      for(i=0;i<16;i++){
+        Wire.write(cnv4[1][i]);
+      }
     Wire.endTransmission();
+  
     Wire.beginTransmission(Addres); // might be different for your display
-    Wire.write(0x40);
-    for(i=0;i<16;i++){
-      Wire.write(cnv5[1][i]);
-    }
-    for(i=0;i<16;i++){
-      Wire.write(cnv6[1][i]);
-    }
+    Wire.write(B01000000); //control byte, Co bit = 0 (continue), D/C# = 1 (data)
+      for(i=0;i<16;i++){
+        Wire.write(cnv5[1][i]);
+      }
+      for(i=0;i<16;i++){
+        Wire.write(cnv6[1][i]);
+      }
     Wire.endTransmission();
+  
     Wire.beginTransmission(Addres); // might be different for your display
-    Wire.write(0x40);
-    for(i=0;i<16;i++){
-      Wire.write(cnv7[1][i]);
-    }
-    for(i=0;i<16;i++){
-      Wire.write(cnv8[1][i]);
-    }
+    Wire.write(B01000000); //control byte, Co bit = 0 (continue), D/C# = 1 (data)
+      for(i=0;i<16;i++){
+        Wire.write(cnv7[1][i]);
+      }
+      for(i=0;i<16;i++){
+        Wire.write(cnv8[1][i]);
+      }
     Wire.endTransmission();
 
 }
 
-//**************************************************
 void OLED_SSD1306::OLED_2X2_Display_Out_16x64(uint8_t Addres, uint8_t x, uint8_t y, uint8_t* DotB1,uint8_t* DotB2, uint8_t* DotB3, uint8_t* DotB4)
 {//------------------------x(0-127),y(0-6)
   uint8_t i;
@@ -288,127 +307,137 @@ void OLED_SSD1306::OLED_2X2_Display_Out_16x64(uint8_t Addres, uint8_t x, uint8_t
   Dot_2X2_convert(DotB4, cnv4[0], cnv4[1]);
       
   Wire.beginTransmission(Addres); // might be different for your display
-  Wire.write(0x00);
-  Wire.write(0xB0 | y);
-  Wire.write(0x21);//set column addres
-  Wire.write(0x00 | x);//start column addres
-  Wire.write(B01111111);//stop column addres
+  Wire.write(B00000000); //control byte, Co bit = 0 (continue), D/C# = 0 (command)
+    Wire.write(0xB0 | y);
+    Wire.write(0x21);//set column addres
+      Wire.write(0x00 | x);//start column addres
+      Wire.write(127);//stop column addres
   Wire.endTransmission();
+  
     Wire.beginTransmission(Addres); // might be different for your display
-    Wire.write(0x40);
-    for(i=0;i<16;i++){
-      Wire.write(cnv1[0][i]);
-    }
-    for(i=0;i<16;i++){
-      Wire.write(cnv2[0][i]);
-    }
+    Wire.write(B01000000); //control byte, Co bit = 0 (continue), D/C# = 1 (data)
+      for(i=0;i<16;i++){
+        Wire.write(cnv1[0][i]);
+      }
+      for(i=0;i<16;i++){
+        Wire.write(cnv2[0][i]);
+      }
     Wire.endTransmission();
+  
     Wire.beginTransmission(Addres); // might be different for your display
-    Wire.write(0x40);
-    for(i=0;i<16;i++){
-      Wire.write(cnv3[0][i]);
-    }
-    for(i=0;i<16;i++){
-      Wire.write(cnv4[0][i]);
-    }
+    Wire.write(B01000000); //control byte, Co bit = 0 (continue), D/C# = 1 (data)
+      for(i=0;i<16;i++){
+        Wire.write(cnv3[0][i]);
+      }
+      for(i=0;i<16;i++){
+        Wire.write(cnv4[0][i]);
+      }
     Wire.endTransmission();
   y++;
+  
   Wire.beginTransmission(Addres); // might be different for your display
-  Wire.write(0x00);
-  Wire.write(0xB0 | y);
-  Wire.write(0x21);//set column addres
-  Wire.write(0x00 | x);//start column addres
-  Wire.write(B01111111);//stop column addres
+    Wire.write(B00000000); //control byte, Co bit = 0 (continue), D/C# = 0 (command)
+    Wire.write(0xB0 | y);
+    Wire.write(0x21);//set column addres
+      Wire.write(0x00 | x);//start column addres
+      Wire.write(127);//stop column addres
   Wire.endTransmission();
+  
     Wire.beginTransmission(Addres); // might be different for your display
-    Wire.write(0x40);
-    for(i=0;i<16;i++){
-      Wire.write(cnv1[1][i]);
-    }
-    for(i=0;i<16;i++){
-      Wire.write(cnv2[1][i]);
-    }
+    Wire.write(B01000000); //control byte, Co bit = 0 (continue), D/C# = 1 (data)
+      for(i=0;i<16;i++){
+        Wire.write(cnv1[1][i]);
+      }
+      for(i=0;i<16;i++){
+        Wire.write(cnv2[1][i]);
+      }
     Wire.endTransmission();
+  
     Wire.beginTransmission(Addres); // might be different for your display
-    Wire.write(0x40);
-    for(i=0;i<16;i++){
-      Wire.write(cnv3[1][i]);
-    }
-    for(i=0;i<16;i++){
-      Wire.write(cnv4[1][i]);
-    }
+    Wire.write(B01000000); //control byte, Co bit = 0 (continue), D/C# = 1 (data)
+      for(i=0;i<16;i++){
+        Wire.write(cnv3[1][i]);
+      }
+      for(i=0;i<16;i++){
+        Wire.write(cnv4[1][i]);
+      }
     Wire.endTransmission();
 }
-//***************************************************************
+
 void OLED_SSD1306::OLED_16x16_Display_Out(uint8_t Addres, uint8_t x, uint8_t y, uint8_t* DotB1, uint8_t* DotB2)
 {
   uint8_t i;
 
   y++;
   Wire.beginTransmission(Addres);
-  Wire.write(0x00);
-  Wire.write(0xB0 | y);  
-  Wire.write(0x21);//set column addres
-  Wire.write(0x00 | x);//start column addres
-  Wire.write(B01111111);//Column Stop Address
+  Wire.write(B00000000); //control byte, Co bit = 0 (continue), D/C# = 0 (command)
+    Wire.write(0xB0 | y);  
+    Wire.write(0x21);//set column addres
+      Wire.write(0x00 | x);//start column addres
+      Wire.write(127);//Column Stop Address
   Wire.endTransmission();
+  
   Wire.beginTransmission(Addres); // might be different for your display
-  Wire.write(0x40); //Set Display Start Line
+  Wire.write(B01000000); //control byte, Co bit = 0 (continue), D/C# = 1 (data)
     for(i=0; i<16; i++){
       Wire.write(DotB1[i]);
     }
   Wire.endTransmission();
   y--;
+  
   Wire.beginTransmission(Addres);
-  Wire.write(0x00);
-  Wire.write(0xB0 | y);
-  Wire.write(0x21);//set column addres
-  Wire.write(0x00 | x);//start column addres
-  Wire.write(B01111111);//Column Stop Address
+  Wire.write(B00000000); //control byte, Co bit = 0 (continue), D/C# = 0 (command)
+    Wire.write(0xB0 | y);
+    Wire.write(0x21);//set column addres
+      Wire.write(0x00 | x);//start column addres
+      Wire.write(127);//Column Stop Address
   Wire.endTransmission();
+  
   Wire.beginTransmission(Addres); // might be different for your display
-  Wire.write(0x40); //Set Display Start Line
+  Wire.write(B01000000); //control byte, Co bit = 0 (continue), D/C# = 1 (data)
     for(i=0; i<16; i++){
       Wire.write(DotB2[i]);
     }
   Wire.endTransmission();
 }
-//***************************************************************
+
 void OLED_SSD1306::OLED_8x16_Display_Out(uint8_t Addres, uint8_t x, uint8_t y, uint8_t* DotB1, uint8_t* DotB2)
 {
   uint8_t i;
 
   y++;
   Wire.beginTransmission(Addres);
-  Wire.write(0x00);
-  Wire.write(0xB0 | y);  
-  Wire.write(0x21);//set column addres
-  Wire.write(0x00 | x);//start column addres
-  Wire.write(B01111111);//Column Stop Address
+  Wire.write(B00000000); //control byte, Co bit = 0 (continue), D/C# = 0 (command)
+    Wire.write(0xB0 | y);  
+    Wire.write(0x21);//set column addres
+      Wire.write(0x00 | x);//start column addres
+      Wire.write(127);//Column Stop Address
   Wire.endTransmission();
+  
   Wire.beginTransmission(Addres); // might be different for your display
-  Wire.write(0x40); //Set Display Start Line
+  Wire.write(B01000000); //control byte, Co bit = 0 (continue), D/C# = 1 (data)
     for(i=0; i<8; i++){
       Wire.write(DotB1[i]);
     }
   Wire.endTransmission();
   y--;
+  
   Wire.beginTransmission(Addres);
-  Wire.write(0x00);
-  Wire.write(0xB0 | y);
-  Wire.write(0x21);//set column addres
-  Wire.write(0x00 | x);//start column addres
-  Wire.write(B01111111);//Column Stop Address
+  Wire.write(B00000000); //control byte, Co bit = 0 (continue), D/C# = 0 (command)
+    Wire.write(0xB0 | y);
+    Wire.write(0x21);//set column addres
+      Wire.write(0x00 | x);//start column addres
+      Wire.write(127);//Column Stop Address
   Wire.endTransmission();
+  
   Wire.beginTransmission(Addres); // might be different for your display
-  Wire.write(0x40); //Set Display Start Line
+  Wire.write(B01000000); //control byte, Co bit = 0 (continue), D/C# = 1 (data)
     for(i=0; i<8; i++){
       Wire.write(DotB2[i]);
     }
   Wire.endTransmission();
 }
 
-//********************************************
 void OLED_SSD1306::Dot_16X16_Rotation(int16_t Rotation, uint8_t* DotB1, uint8_t* DotB2, uint8_t cnv1[16], uint8_t cnv2[16])
 {
   uint8_t i,j;
@@ -425,7 +454,7 @@ void OLED_SSD1306::Dot_16X16_Rotation(int16_t Rotation, uint8_t* DotB1, uint8_t*
     }
   }
 }
-//********************************************
+
 void OLED_SSD1306::Dot_8X16_Rotation(int16_t Rotation, uint8_t* DotB1, uint8_t cnv1[16], uint8_t cnv2[16])
 {
   uint8_t i,j;
@@ -450,7 +479,7 @@ void OLED_SSD1306::Dot_8X16_Rotation(int16_t Rotation, uint8_t* DotB1, uint8_t c
       
   }
 }
-//*************************Dot Scroll Replace**************************************
+
 void OLED_SSD1306::Scroller_16x16Dot_Replace(uint8_t drection, uint8_t* next_buff1, uint8_t* next_buff2, uint8_t* scl_buff1, uint8_t* scl_buff2, uint8_t* Orign_buff1, uint8_t* Orign_buff2)
 {
   uint8_t i;
@@ -466,7 +495,7 @@ void OLED_SSD1306::Scroller_16x16Dot_Replace(uint8_t drection, uint8_t* next_buf
     Orign_buff2[i] = Orign_buff2[i]<<1;
   }
 }
-//*************************Dot Scroll Replace**************************************
+
 void OLED_SSD1306::Scroller_8x16Dot_Replace(uint8_t drection, uint8_t* next_buff1, uint8_t* scl_buff1,uint8_t* Orign_buff1)
 {
   uint8_t i;
@@ -478,7 +507,7 @@ void OLED_SSD1306::Scroller_8x16Dot_Replace(uint8_t drection, uint8_t* next_buff
     Orign_buff1[i] = Orign_buff1[i]<<1;
   }
 }
-//*************************Black_White_Reversal**************************************
+
 void OLED_SSD1306::OLED16x16_White_Reversal(boolean rev, uint8_t* buf1, uint8_t* buf2, uint8_t* buf_cnv1, uint8_t* buf_cnv2)
 {
   if(rev == true){
@@ -488,7 +517,7 @@ void OLED_SSD1306::OLED16x16_White_Reversal(boolean rev, uint8_t* buf1, uint8_t*
     }
   }
 }
-//*************************Black_White_Reversal**************************************
+
 void OLED_SSD1306::OLED8x16_White_Reversal(boolean rev, uint8_t* buf1, uint8_t* buf_cnv1)
 {
   if(rev == true){

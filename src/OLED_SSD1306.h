@@ -1,6 +1,6 @@
 /*
   OLED_SSD1306.h - for ESP-WROOM-02 ( esp8266 ) or Arduino
-  Beta version 1.5
+  Beta version 1.6
 
 The MIT License (MIT)
 
