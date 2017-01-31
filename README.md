@@ -10,7 +10,7 @@ beta ver 1.6
 I2C通信のコントロールバイトが無かったものを修正しました。  
 
 My blog:  
-https://www.mgo-tec.com/blog-entry-1616shinonome-ws-oled-news.html
+https://www.mgo-tec.com/blog-entry-1616shinonome-ws-oled-news.html  
 https://www.mgo-tec.com/blog-entry-ssd1306-shinonome.html  
 https://www.mgo-tec.com/blog-entry-wroom-oled-news-ntp01.html  
 
